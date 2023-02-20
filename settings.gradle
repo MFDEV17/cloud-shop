@@ -1,4 +1,6 @@
 rootProject.name = 'cloud-shop'
 include 'microservices:product-service'
 findProject(':microservices:product-service')?.name = 'product-service'
+include 'api:app-api'
+findProject(':api:app-api')?.name = 'app-api'
 

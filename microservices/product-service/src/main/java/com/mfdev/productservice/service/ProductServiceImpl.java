@@ -5,17 +5,19 @@ import com.mfdev.api.core.product.dto.ProductUpdateDto;
 import com.mfdev.api.core.product.dto.ShortProductDto;
 import com.mfdev.api.core.product.dto.mapper.ProductMapper;
 import com.mfdev.api.core.product.service.ProductService;
+import com.mfdev.exception.ProductNotFoundException;
 import com.mfdev.productservice.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.util.List;
 import java.util.UUID;
+
+import static java.lang.String.format;
 
 @Service
 @RequiredArgsConstructor
@@ -65,28 +67,32 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Flux<ShortProductDto> findAllProducts(Pageable pageable) {
-        return Flux.fromIterable(mapper.productsToShortProductsDtoListPageable(repository.findAll(), pageable));
+    public Flux<ShortProductDto> findAllProductsPageable(int offset, int count) {
+        return Flux.fromIterable(
+                mapper.productsToShortProductsDtoListPageable(
+                        repository
+                                .findAll(PageRequest.of(offset, count))));
     }
 
     @Override
     public Flux<ShortProductDto> findAllProducts() {
-        List<ShortProductDto> shortProductDtos =
-                mapper.productsToShortProductsDtoList(repository.findAll());
-        return Flux.fromIterable(shortProductDtos);
+        return Flux.fromIterable(mapper.productsToShortProductsDtoList(repository.findAll()));
     }
 
     @Override
     public Flux<ShortProductDto> findAllByName(String name) {
-        return Flux.fromIterable(
-                mapper.productsToShortProductsDtoList(repository.findAllByNameLike(name))
-        );
+        return Flux.fromIterable(mapper.productsToShortProductsDtoList(
+                repository.findAllByNameLike(name)));
     }
 
     @Override
     public Mono<ShortProductDto> findById(Long id) {
         return Mono.fromCallable(() -> mapper
-                .productToShortProductDto(repository.getReferenceById(id)))
-                .subscribeOn(Schedulers.boundedElastic());
+                .productToShortProductDto(
+                        repository
+                                .findById(id)
+                                .orElseThrow(() -> new ProductNotFoundException(format("Not found product with id '%d'", id)))
+                )
+        ).subscribeOn(Schedulers.boundedElastic());
     }
 }

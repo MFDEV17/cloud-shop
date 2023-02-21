@@ -19,7 +19,7 @@ public interface ProductService {
 
     Mono<ResponseEntity<String>> updateProduct(ProductUpdateDto dto);
 
-    Flux<ShortProductDto> findAllProducts(Pageable pageable);
+    Flux<ShortProductDto> findAllProductsPageable(int offset, int count);
 
     Flux<ShortProductDto> findAllProducts();
 

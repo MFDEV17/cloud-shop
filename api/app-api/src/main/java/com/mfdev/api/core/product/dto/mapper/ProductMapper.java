@@ -6,8 +6,6 @@ import com.mfdev.api.core.product.entity.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,8 +28,7 @@ public interface ProductMapper {
                 .collect(Collectors.toList());
     }
 
-    default Page<ShortProductDto> productsToShortProductsDtoListPageable(List<Product> products, Pageable pageable) {
-        List<ShortProductDto> shortProductDtos = productsToShortProductsDtoList(products);
-        return new PageImpl<>(shortProductDtos, pageable, products.size());
+    default List<ShortProductDto> productsToShortProductsDtoListPageable(Page<Product> products) {
+        return productsToShortProductsDtoList(products.getContent());
     }
 }
